@@ -15,7 +15,7 @@
 # in the templates via {{ site.myvariable }}.
 title: GPS Simulator
 email: eternity01033@gmail.com
-description: A GPS Simulator built for UC Davis' computer simulations in STEM education freshman seminar. 
+description: Built for UC Davis' computer simulations in STEM education freshman seminar. 
 baseurl: "" # the subpath of your site, e.g. /blog
 url: "" # the base hostname & protocol for your site, e.g. http://example.com
 github_username:  klanmiko
