@@ -10,5 +10,7 @@ kepler_orbit.m is a script that solves the kepler equation using newton's method
 
 The script plots four graphs taken from the solution of the [kepler equation](https://en.wikipedia.org/wiki/Kepler's_equation) along fixed timesteps for one period of orbit
 
+See [website](https://klanmiko.github.io/GPSsimulation) for more details
+
 This project was developed in a UC Davis Seminar, Computer Simulations for STEM education
    
