@@ -42,4 +42,24 @@ The *easier* way is to build a system that can:
 5. Compare the solution to the target for accuracy.
 6. Repeat steps 2-6 over a sample domain
 
+In a real-world scenario, satellites have their own form of GPS that keeps track of their position based on a number of ground stations and an orbital model. To keep the GPS simulator in this project relevant, a decision was made to model orbiting satellites instead of using random data points. The data generated from this system is easier to understand and analyze as compared to random sampling.
+
+However, an orbital model would need to be implemented to simulate the orbit of the satellites.
+
+Kepler Equation
+----------------
+The [kepler equation](https://en.wikipedia.org/wiki/Kepler's_equation) relates the Mean anomaly (angle) to the eccentric anomaly (another angle) given the eccentricity as a constant (shape of the ellipse)
+
+The eccentric anomaly E is useful because the position of an orbital body can be calculated just knowing this angle.
+
+$$
+M = E - esin(E)
+$$
+
+This equation has no algebraic solution for E, thus the next best option for solving this equation is again Newton's method. 
+
+The GPS simulator requires a solver for the kepler equation along with the orbital characteristics of each satellite in order to produce their positions at each timestep.
+
+Code Review
+================
 
