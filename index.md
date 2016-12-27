@@ -5,6 +5,10 @@
 layout: default
 ---
 <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+Demo
+===========
+<blockquote class="imgur-embed-pub" lang="en" data-id="a/awrNq"><a href="//imgur.com/awrNq"></a></blockquote><script async src="//s.imgur.com/min/embed.js" charset="utf-8"></script>
+
 Synopsis
 ================
 A GPS system allows a receiver to determine its position in xyz coordinates relative to the xyz coordinates of 4 satellites.
