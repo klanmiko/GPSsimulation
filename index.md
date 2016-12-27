@@ -66,6 +66,9 @@ The GPS simulator requires a solver for the kepler equation along with the orbit
 
 Code Review
 ================
+
+Kepler Orbit
+------------
 The kepler solver is described in the file kepler_orbit.m. The functional portions of the code will be explained as follows.
 
 ~~~~
@@ -121,5 +124,128 @@ function out = kepler_solve(M,Eo,e) %Eo is for initial guess
 ~~~~
 The three function above define the kepler equation, its derivative, and an application of newton's method to solve the equation.
 
+For an eccentricity of 0.661438, the following plot is obtained.
+![kepler]({{site.url}}/images/r7f1kQS.png)
 
+GPS Solver
+--------------
+The code for the GPS solver is complex and contains parts of the above kepler solver in its implementation, which is explained below.
+
+~~~~
+function GPS(target) % target = [0,-1,0] for example
+disp(target);
+close all;
+%note z-value cannot be zero or the jacobian is singular
+%periastron time is the time when the satellite passes the periastron
+satellite1 = [30,4,4,60,3]; %[period a b periastron_time z]
+satellite2 = [100,4,4,30,0.3];
+satellite3 = [100,4,4,0,0.7];
+satellite4 = [50,4,4,7,-1];
+c = 10;
+bias = 20;
+[XS,YS,ZS] = sphere(50);
+current_time = 0;
+dt = 1;
+~~~~
+
+The initial conditions for the satellites are set up, the speed of light is set to 10, the desynchronization of satellite and target clocks is set to 20, and the time step is set to 1.
+
+~~~~
+while current_time < 200
+  
+  ps1 = kepler_orbit(satellite1(1),satellite1(2),satellite1(3),satellite1(4),current_time);
+  ps2 = kepler_orbit(satellite2(1),satellite2(2),satellite2(3),satellite2(4),current_time);
+  ps3 = kepler_orbit(satellite3(1),satellite3(2),satellite3(3),satellite3(4),current_time);
+  ps4 = kepler_orbit(satellite4(1),satellite4(2),satellite4(3),satellite4(4),current_time);
+~~~~
+
+Here ps<sub>i</sub> is a vector representing the $$(x,y)$$ coordinates of each satellite determined from its orbit using the kepler solver.
+
+~~~~  
+  t = zeros(1,4);
+  
+  t(1) = findTrueReceiveTimeForSatellite(target,[ps1(1),ps1(2),satellite1(5)],c)+current_time; % target, [x,y,z], c
+  t(2) = findTrueReceiveTimeForSatellite(target,[ps2(1),ps2(2),satellite2(5)],c)+current_time;
+  t(3) = findTrueReceiveTimeForSatellite(target,[ps3(1),ps3(2),satellite3(5)],c)+current_time;
+  t(4) = findTrueReceiveTimeForSatellite(target,[ps4(1),ps4(2),satellite4(5)],c)+current_time;
+~~~~
+
+The t vector holds the value of the simulated travel times between each satellite and the target, adjusted to the timestep.
+
+~~~~  
+  x = trilaterate(c,[ps1(1),ps1(2),satellite1(5),t(1)+bias],
+  [ps2(1),ps2(2),satellite2(5),t(2)+bias],
+  [ps3(1),ps3(2),satellite3(5),t(3)+bias],
+  [ps4(1),ps4(2),satellite4(5),t(4)+bias],
+  current_time);
+~~~~
+
+Here x is a vector representing the coordinates of the target given by the GPS solver. The clock desynchronization is added to the t vector before it is passed to the solver.
+
+~~~~
+function out = findTrueReceiveTimeForSatellite(target,psatellite,c)
+  out = sqrt((target(1)-psatellite(1))^2+(target(2)-psatellite(2))^2+(target(3)-psatellite(3))^2)/c;
+end
+~~~~
+
+The 	findTrueReceiveTimeForSatellite	function simply uses the distance formula to find the time light takes to travel from each satellite to the target.
+
+~~~~
+function out = trilaterate(c,d1,d2,d3,d4,sent_time)
+  x = zeros(4,1);
+  c
+  sent_time
+  d1
+  d2
+  d3
+  d4
+  x(1) = 10; x(2) = 10; x(3) = 10; x(4) = 3; %x = [x y z t]
+
+  TOL = 1e-10; error = 1;
+  count = 0;
+~~~~
+
+The function 	trillaterate	takes as arguments the speed of light, coordinates, message receive time in target frame, and the send time for all of the messages (assuming the satellites all send messages at the same time). It defines the x vector to hold the x,y,z coordinates of the target to be iterated upon, and x(4) represents the clock bias. 
+
+~~~~
+while max(abs(error)) > TOL
+xold = x;
+
+error = [(x(1)-d1(1))^2+(x(2)-d1(2))^2+(x(3)-d1(3))^2-c^2*(-x(4)+d1(4)-sent_time)^2;
+(x(1)-d2(1))^2+(x(2)-d2(2))^2+(x(3)-d2(3))^2-c^2*(-x(4)+d2(4)-sent_time)^2;
+(x(1)-d3(1))^2+(x(2)-d3(2))^2+(x(3)-d3(3))^2-c^2*(-x(4)+d3(4)-sent_time)^2;
+(x(1)-d4(1))^2+(x(2)-d4(2))^2+(x(3)-d4(3))^2-c^2*(-x(4)+d4(4)-sent_time)^2];
+
+jacobian = [2*(x(1)-d1(1)), 2*(x(2)-d1(2)), 2*(x(3)-d1(3)), +c^2*2*(-x(4)+d1(4)-sent_time);
+2*(x(1)-d2(1)), 2*(x(2)-d2(2)), 2*(x(3)-d2(3)), +c^2*2*(-x(4)+d2(4)-sent_time);
+2*(x(1)-d3(1)), 2*(x(2)-d3(2)), 2*(x(3)-d3(3)), +c^2*2*(-x(4)+d3(4)-sent_time);
+2*(x(1)-d4(1)), 2*(x(2)-d4(2)), 2*(x(3)-d4(3)), +c^2*2*(-x(4)+d4(4)-sent_time)]
+
+if(det(jacobian)!=0) x = x-inv(jacobian)*error;
+else 
+  display("jacobian is singular error");
+  break;
+endif
+error
+[count x(1) x(2) x(3) x(4)]
+count+=1;
+endwhile
+   r = [c^2*(-x(4)+d1(4)-sent_time)^2;
+ c^2*(-x(4)+d2(4)-sent_time)^2;
+ c^2*(-x(4)+d3(4)-sent_time)^2;
+ c^2*(-x(4)+d4(4)-sent_time)^2].^(1/2)
+ 
+   z = [-x(4)+d1(4);
+  -x(4)+d2(4);
+  -x(4)+d3(4);
+  -x(4)+d4(4)]
+  
+  out = x;
+end
+~~~~
+
+The error function is the GPS equation with the right hand side subtracted to give an equation that equals zero. Then the jacobian is determined using the partial derivatives of the GPS equation with respect to x,y,z and bias, each row representing the data from each satellite. 
+
+The function checks that the jacobian is not singular, and then performs newton's method to approximate the coordinates of the target. The r vector gives the distance from each satellite to the target in terms of time for each message to be received. The z vector gives the true receive time for each message (in satellite frame).
 	
+
