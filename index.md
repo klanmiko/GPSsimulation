@@ -7,7 +7,7 @@ layout: default
 <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
 Demo
 ===========
-<blockquote class="imgur-embed-pub" lang="en" data-id="a/awrNq"><a href="//imgur.com/awrNq"></a></blockquote><script async src="//s.imgur.com/min/embed.js" charset="utf-8"></script>
+<blockquote class="imgur-embed-pub" lang="en" data-id="75mQz3V"><a href="//imgur.com/75mQz3V"></a></blockquote><script async src="//s.imgur.com/min/embed.js" charset="utf-8"></script>
 
 Synopsis
 ================
@@ -66,4 +66,60 @@ The GPS simulator requires a solver for the kepler equation along with the orbit
 
 Code Review
 ================
+The kepler solver is described in the file kepler_orbit.m. The functional portions of the code will be explained as follows.
 
+~~~~
+function kepler_orbit(period,a,b)
+...
+e = sqrt(1-b^2/a^2);
+~~~~
+
+The eccentricity of the elliptical orbit is determined from the major and minor axis.
+
+~~~~
+dt = 0.01;
+t = linspace(0,period,period/dt);
+max_iter = period/dt;
+Eray(1)=0;
+Mray(1)=0;
+~~~~
+
+t is a vector from 0 to the period spaced evenly by dt, Eray and Mray hold the values of the eccentric anomaly and mean anomaly at each time step.
+
+~~~~
+for iterations = 2:max_iter
+  M = 2*pi/period*(dt*(iterations-1)-to);
+    Mray(iterations) = M;
+    E = Eray(iterations-1);
+    E = kepler_solve(M,E,e);
+    
+    xi(iterations) = a*(cos(E)-e);
+    yi(iterations) = b*sin(E);
+    Eray(iterations) = E;
+end
+~~~~
+
+The script iterates over the entire ellipse, calculating the value of E and the coordinates of the orbital body at each timestep. The last value of E is used as the initial guess for the current value.
+
+~~~~
+function out = kepler(E,e)
+         out = E - e*sin(E);
+         
+function out = pkepler(E,e)
+         out = 1 - e*cos(E);
+         
+function out = kepler_solve(M,Eo,e) %Eo is for initial guess
+  count = 0;
+  internal_max = 20000;
+  E = Eo;
+  
+  while abs(kepler(E,e)-M) > 10e-8 && count<internal_max
+    E = E - (kepler(E,e)-M)/pkepler(E,e);
+    count++;
+  end  
+  out = E;
+~~~~
+The three function above define the kepler equation, its derivative, and an application of newton's method to solve the equation.
+
+
+	
