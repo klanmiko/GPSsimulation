@@ -248,4 +248,10 @@ The error function is the GPS equation with the right hand side subtracted to gi
 
 The function checks that the jacobian is not singular, and then performs newton's method to approximate the coordinates of the target. The r vector gives the distance from each satellite to the target in terms of time for each message to be received. The z vector gives the true receive time for each message (in satellite frame).
 	
+Conclusion
+=============
+From running the simulation to completion a number of times, the simulator has shown to be effective most of the time on a qualitative basis. There are cases in which the solver converges to the wrong root for certain positions of the satellites. The error rate also seems to increase with the scaling of the speed of light, where values in the extremes cause the solver to error wildly. It is beyond the scope of this project to test or find solutions to the errors in the GPS solver. However, the easiest solution would be to use previously found values in the solver as the initial guess for the soler(assuming that the target does not move very far). An in-depth study may focus on producing a fractal of which initial guesses produce the correct solution for the GPS solver. Another system would have to be developed to correctly scale satellite coordinates and the value of the speed of light, in a real-world situation the time travelled between satellite and receiver is significantly smaller than the distance between the satellite and receiver, thus a way to scale these two values would need to be found while maintaining the accuracy of the GPS system.
 
+Another limitation is that the kepler solver only produces x and y coordinates, when in reality satellites orbit at an angle, and the current solution does not account for this tilt. This issue is further affected by the trillateration function's inability to deal with a singular matrix, thus forcing the implementation to create fake z "levels" for each orbital ellipse. 
+
+Thanks to Dr. Hafez and Dr. Tavernetti of UC Davis for helping me with this project.
